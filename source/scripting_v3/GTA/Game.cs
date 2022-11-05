@@ -42,6 +42,7 @@ namespace GTA
 			"RADIO_34_DLC_HEI4_KULT",
 			"RADIO_35_DLC_HEI4_MLR",
 			"RADIO_36_AUDIOPLAYER",
+			"RADIO_37_MOTOMAMI",
 			"RADIO_OFF"
 		};
 		internal static readonly string[] windowTitles = {
@@ -550,9 +551,10 @@ namespace GTA
 		/// Searches the address space of the current process for a memory pattern.
 		/// </summary>
 		/// <param name="pattern">The pattern.</param>
+		/// <param name="startAddress">The address to start searching at. If <see cref="IntPtr.Zero" /> (<see langword="default" />), search is started at the base address.</param>
 		/// <returns>The address of a region matching the pattern, or <see cref="IntPtr.Zero" /> if none was found.</returns>
 		/// <remarks>This function takes the Cheat Engine/IDA format ("48 8B 0D ?? ?? ? ? 44 8B C6 8B D5 8B D8" for example, where ?? and ? are wildcards).</remarks>
-		public static IntPtr FindPattern(string pattern)
+		public static IntPtr FindPattern(string pattern, IntPtr startAddress = default)
 		{
 			string newPattern = string.Empty;
 			string newMask = string.Empty;
@@ -576,20 +578,21 @@ namespace GTA
 				newMask += "x";
 			}
 
-			return FindPattern(newPattern, newMask);
+			return FindPattern(newPattern, newMask, startAddress);
 		}
 		/// <summary>
 		/// Searches the address space of the current process for a memory pattern.
 		/// </summary>
 		/// <param name="pattern">The pattern.</param>
 		/// <param name="mask">The pattern mask.</param>
+		/// <param name="startAddress">The address to start searching at. If <see cref="IntPtr.Zero" /> (<see langword="default" />), search is started at the base address.</param>
 		/// <returns>The address of a region matching the pattern, or <see cref="IntPtr.Zero" /> if none was found.</returns>
 		/// <remarks>This function takes the classic format ("\x48\x8B\x0D\x00\x00\x00\x00\x44\x8B\xC6\x8B\xD5\x8B\xD8" as the pattern and "xxx????xxxxxxx" as the mask for example, where \x00 in the pattern and ? In the mask is a wildcard).</remarks>
-		public static IntPtr FindPattern(string pattern, string mask)
+		public static IntPtr FindPattern(string pattern, string mask, IntPtr startAddress = default)
 		{
 			unsafe
 			{
-				byte* address = SHVDN.NativeMemory.FindPattern(pattern, mask);
+				byte* address = (startAddress == IntPtr.Zero ? SHVDN.NativeMemory.FindPattern(pattern, mask) : SHVDN.NativeMemory.FindPattern(pattern, mask, startAddress));
 				return address == null ? IntPtr.Zero : new IntPtr(address);
 			}
 		}

@@ -337,6 +337,7 @@ namespace GTA
 
 		/// <summary>
 		/// Gets or sets the position of this <see cref="Entity"/>.
+		/// If the <see cref="Entity"/> is <see cref="Ped"/> and the <see cref="Ped"/> is in a <see cref="Vehicle"/>, the <see cref="Vehicle"/>'s position will be returned or changed.
 		/// </summary>
 		/// <value>
 		/// The position in world space.
@@ -691,6 +692,67 @@ namespace GTA
 		public virtual void ClearLastWeaponDamage()
 		{
 			Function.Call(Hash.CLEAR_ENTITY_LAST_WEAPON_DAMAGE, Handle);
+		}
+
+		#endregion
+
+		#region Fragment Object
+
+		/// <summary>
+		/// Returns the number of fragment group of this <see cref="Entity"/>.
+		/// </summary>
+		public int FragmentGroupCount
+		{
+			get
+			{
+				var address = MemoryAddress;
+				if (address == IntPtr.Zero)
+				{
+					return 0;
+				}
+
+				return SHVDN.NativeMemory.GetFragmentGroupCountFromEntity(address);
+			}
+		}
+
+		/// <summary>
+		/// Determines if this <see cref="Entity"/> is a fragment object.
+		/// </summary>
+		/// <returns>
+		/// <see langword="true" /> if this <see cref="Entity"/> is a fragment object; otherwise, <see langword="false" />.
+		/// This will return <see langword="true" /> if this <see cref="Entity"/> is a <see cref="Ped"/> or a <see cref="Vehicle"/>.
+		/// </returns>
+		public bool IsFragmentObject
+		{
+			get
+			{
+				var address = MemoryAddress;
+				if (address == IntPtr.Zero)
+				{
+					return false;
+				}
+
+				return SHVDN.NativeMemory.IsEntityFragmentObject(address);
+			}
+		}
+
+		/// <summary>
+		/// Detachs a fragment part of this <see cref="Entity"/>. Can create a new <see cref="Entity"/>.
+		/// </summary>
+		/// <returns>
+		///   <para><see langword="true" /> if a new <see cref="Entity"/> is created; otherwise, <see langword="false" />.</para>
+		///   <para>Returning <see langword="false" /> does not necessarily mean detaching the part did not change the <see cref="Entity"/> in any ways.
+		///   For example, detaching <c>seat_f</c> for <see cref="Vehicle"/> will return <see langword="false" /> but the <see cref="Ped"/> on the front seat will not be able to sit properly.</para>
+		/// </returns>
+		public bool DetachFragmentPart(int fragmentGroupIndex)
+		{
+			var address = MemoryAddress;
+			if (address == IntPtr.Zero)
+			{
+				return false;
+			}
+
+			return SHVDN.NativeMemory.DetachFragmentPartByIndex(address, fragmentGroupIndex);
 		}
 
 		#endregion
@@ -1243,15 +1305,30 @@ namespace GTA
 		/// <summary>
 		/// Determines whether this <see cref="Entity"/> is in a specified angled area
 		/// </summary>
-		/// <param name="origin">The origin.</param>
-		/// <param name="edge">The edge.</param>
-		/// <param name="angle">The angle.</param>
+		/// <param name="origin">The mid-point along a base edge of the rectangle.</param>
+		/// <param name="edge">The mid-point of opposite base edge on the other Z.</param>
+		/// <param name="angle">The width. Wrongly named parameter but is kept for existing script compatibilities.</param>
 		/// <returns>
 		///   <see langword="true" /> if this <see cref="Entity"/> is in the specified angled area; otherwise, <see langword="false" />.
 		/// </returns>
-		public bool IsInAngledArea(Vector3 origin, Vector3 edge, float angle)
+		public bool IsInAngledArea(Vector3 origin, Vector3 edge, float angle) => IsInAngledArea(origin, edge, angle, true);
+		/// <summary>
+		/// Determines whether this <see cref="Entity"/> is in a specified angled area.
+		/// An angled area is an X-Z oriented rectangle with three parameters: origin, extent, and width.
+		/// </summary>
+		/// <param name="originEdge">The mid-point along a base edge of the rectangle.</param>
+		/// <param name="extentEdge">The mid-point of opposite base edge on the other Z.</param>
+		/// <param name="width">The length of the base edge.</param>
+		/// <param name="includeZAxis">
+		/// If set to <see langword="true" />, the method will also check if the point is in area in Z axis as well as X and Y axes.
+		/// If set to <see langword="false" />, the method will only check if the point is in area in X and Y axes.
+		/// </param>
+		/// <returns>
+		///   <see langword="true" /> if this <see cref="Entity"/> is in the specified angled area; otherwise, <see langword="false" />.
+		/// </returns>
+		public bool IsInAngledArea(Vector3 originEdge, Vector3 extentEdge, float width, bool includeZAxis)
 		{
-			return Function.Call<bool>(Hash.IS_ENTITY_IN_ANGLED_AREA, Handle, origin.X, origin.Y, origin.Z, edge.X, edge.Y, edge.Z, angle, false, true, false);
+			return Function.Call<bool>(Hash.IS_ENTITY_IN_ANGLED_AREA, Handle, originEdge.X, originEdge.Y, originEdge.Z, extentEdge.X, extentEdge.Y, extentEdge.Z, width, false, includeZAxis, 0);
 		}
 
 		/// <summary>
@@ -1413,7 +1490,7 @@ namespace GTA
 		/// Applies a force to this <see cref="Entity"/>.
 		/// </summary>
 		/// <param name="direction">The direction to apply the force relative to world coordinates.</param>
-		/// <param name="rotation">The rotation force to apply</param>
+		/// <param name="rotation">The offset from the root bone of this <see cref="Entity"/> where the force applies. "rotation" is incorrectly named parameter but is left for scripts that use the method with named parameters.</param>
 		/// <param name="forceType">Type of the force to apply.</param>
 		public void ApplyForce(Vector3 direction, Vector3 rotation = default, ForceType forceType = ForceType.MaxForceRot2)
 		{
@@ -1423,7 +1500,7 @@ namespace GTA
 		/// Applies a force to this <see cref="Entity"/>.
 		/// </summary>
 		/// <param name="direction">The direction to apply the force relative to this <see cref="Entity"/>s rotation</param>
-		/// <param name="rotation">The rotation force to apply</param>
+		/// <param name="rotation">The offset from the root bone of this <see cref="Entity"/> where the force applies. "rotation" is incorrectly named parameter but is left for scripts that use the method with named parameters.</param>
 		/// <param name="forceType">Type of the force to apply.</param>
 		public void ApplyForceRelative(Vector3 direction, Vector3 rotation = default, ForceType forceType = ForceType.MaxForceRot2)
 		{

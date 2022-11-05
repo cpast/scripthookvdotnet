@@ -358,9 +358,31 @@ namespace GTA
 		public static int PickupObjectCount => SHVDN.NativeMemory.GetPickupObjectCount();
 
 		/// <summary>
+		/// A fast way to get the total number of <see cref="Building"/>s spawned in the world.
+		/// </summary>
+		public static int BuildingCount => SHVDN.NativeMemory.GetBuildingCount();
+		/// <summary>
+		/// A fast way to get the total number of <see cref="AnimatedBuilding"/>s spawned in the world.
+		/// </summary>
+		public static int AnimatedBuildingCount => SHVDN.NativeMemory.GetAnimatedBuildingCount();
+		/// <summary>
+		/// A fast way to get the total number of <see cref="InteriorInstance"/>s spawned in the world.
+		/// </summary>
+		public static int InteriorInstanceCount => SHVDN.NativeMemory.GetInteriorInstCount();
+		/// <summary>
+		/// A fast way to get the total number of <see cref="InteriorProxy"/>s managed in the <see cref="InteriorProxy"/> pool.
+		/// </summary>
+		public static int InteriorProxyCount => SHVDN.NativeMemory.GetInteriorProxyCount();
+
+		/// <summary>
 		/// A fast way to get the total number of <see cref="Projectile"/>s spawned in the world.
 		/// </summary>
 		public static int ProjectileCount => SHVDN.NativeMemory.GetProjectileCount();
+
+		/// <summary>
+		/// Returns the total number of <see cref="Entity"/> colliders used.
+		/// </summary>
+		public static int EntityColliderCount => SHVDN.NativeMemory.GetEntityColliderCount();
 
 		/// <summary>
 		/// The total number of <see cref="Vehicle"/>s that can exist in the world.
@@ -386,6 +408,28 @@ namespace GTA
 		/// Always returns 50 currently since the limit is hard-coded in the exe.
 		/// </summary>
 		public static int ProjectileCapacity => SHVDN.NativeMemory.GetProjectileCapacity();
+		/// <summary>
+		/// The total number of <see cref="Building"/>s that can exist in the world.
+		/// </summary>
+		public static int BuildingCapacity => SHVDN.NativeMemory.GetBuildingCapacity();
+		/// <summary>
+		/// The total number of <see cref="AnimatedBuilding"/>s that can exist in the world.
+		/// </summary>
+		public static int AnimatedBuildingCapacity => SHVDN.NativeMemory.GetAnimatedBuildingCapacity();
+		/// <summary>
+		/// The total number of <see cref="InteriorInstance"/>s that can exist in the world.
+		/// </summary>
+		public static int InteriorInstanceCapacity => SHVDN.NativeMemory.GetInteriorInstCapacity();
+		/// <summary>
+		/// The total number of <see cref="InteriorProxy"/>s the game can manage at the same time in the <see cref="InteriorProxy"/> pool.
+		/// </summary>
+		public static int InteriorProxyCapacity => SHVDN.NativeMemory.GetInteriorProxyCapacity();
+		/// <summary>
+		/// <para>The total number of <see cref="Entity"/> colliders can be used. The return value can be different in different versions.</para>
+		/// <para>When <see cref="EntityColliderCount"/> reaches this value, no more <see cref="Entity"/> will not be able to be physically moved
+		/// and <see cref="Vehicle"/>s and <see cref="Prop"/>s will not be able to detach fragment parts properly.</para>
+		/// </summary>
+		public static int EntityColliderCapacity => SHVDN.NativeMemory.GetEntityColliderCapacity();
 
 		/// <summary>
 		/// Gets the closest <see cref="Ped"/> to a given position in the World.
@@ -610,6 +654,58 @@ namespace GTA
 			return Array.ConvertAll(SHVDN.NativeMemory.GetEntityHandles(position.ToArray(), radius), Entity.FromHandle);
 		}
 
+		public static Building[] GetAllBuildings()
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetBuildingHandles(), Building.FromHandle);
+		}
+		public static Building[] GetNearbyBuildings(Vector3 position, float radius)
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetBuildingHandles(position.ToArray(), radius), Building.FromHandle);
+		}
+		public static Building GetClosestBuilding(Vector3 position, float radius)
+		{
+			return GetClosest(position, GetNearbyBuildings(position, radius));
+		}
+
+		public static AnimatedBuilding[] GetAllAnimatedBuildings()
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetAnimatedBuildingHandles(), AnimatedBuilding.FromHandle);
+		}
+		public static AnimatedBuilding[] GetNearbyAnimatedBuildings(Vector3 position, float radius)
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetAnimatedBuildingHandles(position.ToArray(), radius), AnimatedBuilding.FromHandle);
+		}
+		public static AnimatedBuilding GetClosestAnimatedBuilding(Vector3 position, float radius)
+		{
+			return GetClosest(position, GetNearbyAnimatedBuildings(position, radius));
+		}
+
+		public static InteriorInstance[] GetAllInteriorInstances()
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetInteriorInstHandles(), InteriorInstance.FromHandle);
+		}
+		public static InteriorInstance[] GetNearbyInteriorInstances(Vector3 position, float radius)
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetInteriorInstHandles(position.ToArray(), radius), InteriorInstance.FromHandle);
+		}
+		public static InteriorInstance GetClosestInteriorInstance(Vector3 position, float radius)
+		{
+			return GetClosest(position, GetNearbyInteriorInstances(position, radius));
+		}
+
+		public static InteriorProxy[] GetAllInteriorProxies()
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetInteriorProxyHandles(), InteriorProxy.FromHandle);
+		}
+		public static InteriorProxy[] GetNearbyInteriorProxies(Vector3 position, float radius)
+		{
+			return Array.ConvertAll(SHVDN.NativeMemory.GetInteriorProxyHandles(position.ToArray(), radius), InteriorProxy.FromHandle);
+		}
+		public static InteriorProxy GetClosestInteriorProxy(Vector3 position, float radius)
+		{
+			return GetClosest(position, GetNearbyInteriorProxies(position, radius));
+		}
+
 		/// <summary>
 		/// Gets the closest <see cref="ISpatial"/> to a given position in the World.
 		/// </summary>
@@ -656,6 +752,186 @@ namespace GTA
 				}
 			}
 			return (T)closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="Building"/> to a given position in the World.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="buildings">The buildings to check.</param>
+		/// <returns>The closest <see cref="Building"/> to the <paramref name="position"/></returns>
+		public static Building GetClosest(Vector3 position, params Building[] buildings)
+		{
+			Building closest = null;
+			float closestDistance = 3e38f;
+
+			foreach (var building in buildings)
+			{
+				var distance = position.DistanceToSquared(building.Position);
+				if (distance <= closestDistance)
+				{
+					closest = building;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="Building"/> to a given position in the World ignoring height.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="buildings">The buildings to check.</param>
+		/// <returns>The closest <see cref="Building"/> to the <paramref name="position"/></returns>
+		public static Building GetClosest(Vector2 position, params Building[] buildings)
+		{
+			Building closest = null;
+			float closestDistance = 3e38f;
+			var position3D = new Vector3(position.X, position.Y, 0.0f);
+
+			foreach (var building in buildings)
+			{
+				var distance = position3D.DistanceToSquared2D(building.Position);
+				if (distance <= closestDistance)
+				{
+					closest = building;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="AnimatedBuilding"/> to a given position in the World.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="animatedBuildings">The animated building to check.</param>
+		/// <returns>The closest <see cref="AnimatedBuilding"/> to the <paramref name="position"/></returns>
+		public static AnimatedBuilding GetClosest(Vector3 position, params AnimatedBuilding[] animatedBuildings)
+		{
+			AnimatedBuilding closest = null;
+			float closestDistance = 3e38f;
+
+			foreach (var animatedBuilding in animatedBuildings)
+			{
+				var distance = position.DistanceToSquared(animatedBuilding.Position);
+				if (distance <= closestDistance)
+				{
+					closest = animatedBuilding;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="AnimatedBuilding"/> to a given position in the World ignoring height.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="animatedBuildings">The animated building to check.</param>
+		/// <returns>The closest <see cref="AnimatedBuilding"/> to the <paramref name="position"/></returns>
+		public static AnimatedBuilding GetClosest(Vector2 position, params AnimatedBuilding[] animatedBuildings)
+		{
+			AnimatedBuilding closest = null;
+			float closestDistance = 3e38f;
+			var position3D = new Vector3(position.X, position.Y, 0.0f);
+
+			foreach (var animatedBuilding in animatedBuildings)
+			{
+				var distance = position3D.DistanceToSquared2D(animatedBuilding.Position);
+				if (distance <= closestDistance)
+				{
+					closest = animatedBuilding;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="InteriorInstance"/> to a given position in the World.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="interiorInstances">The spatials to check.</param>
+		/// <returns>The closest <see cref="InteriorInstance"/> to the <paramref name="position"/></returns>
+		public static InteriorInstance GetClosest(Vector3 position, params InteriorInstance[] interiorInstances)
+		{
+			InteriorInstance closest = null;
+			float closestDistance = 3e38f;
+
+			foreach (var interiorInstance in interiorInstances)
+			{
+				var distance = position.DistanceToSquared(interiorInstance.Position);
+				if (distance <= closestDistance)
+				{
+					closest = interiorInstance;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="InteriorInstance"/> to a given position in the World ignoring height.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="interiorInstances">The interior instances to check.</param>
+		/// <returns>The closest <see cref="InteriorInstance"/> to the <paramref name="interiorInstances"/></returns>
+		public static InteriorInstance GetClosest(Vector2 position, params InteriorInstance[] interiorInstances)
+		{
+			InteriorInstance closest = null;
+			float closestDistance = 3e38f;
+			var position3D = new Vector3(position.X, position.Y, 0.0f);
+
+			foreach (var interiorInstance in interiorInstances)
+			{
+				var distance = position3D.DistanceToSquared2D(interiorInstance.Position);
+				if (distance <= closestDistance)
+				{
+					closest = interiorInstance;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="InteriorProxy"/> to a given position in the World.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="interiorProxies">The spatials to check.</param>
+		/// <returns>The closest <see cref="InteriorProxy"/> to the <paramref name="position"/></returns>
+		public static InteriorProxy GetClosest(Vector3 position, params InteriorProxy[] interiorProxies)
+		{
+			InteriorProxy closest = null;
+			float closestDistance = 3e38f;
+
+			foreach (var interiorProxy in interiorProxies)
+			{
+				var distance = position.DistanceToSquared(interiorProxy.Position);
+				if (distance <= closestDistance)
+				{
+					closest = interiorProxy;
+					closestDistance = distance;
+				}
+			}
+			return closest;
+		}
+		/// <summary>
+		/// Gets the closest <see cref="InteriorProxy"/> to a given position in the World ignoring height.
+		/// </summary>
+		/// <param name="position">The position to check against.</param>
+		/// <param name="interiorProxies">The spatials to check.</param>
+		/// <returns>The closest <see cref="InteriorProxy"/> to the <paramref name="position"/></returns>
+		public static InteriorProxy GetClosest(Vector2 position, params InteriorProxy[] interiorProxies)
+		{
+			InteriorProxy closest = null;
+			float closestDistance = 3e38f;
+			var position3D = new Vector3(position.X, position.Y, 0.0f);
+
+			foreach (var interiorProxy in interiorProxies)
+			{
+				var distance = position3D.DistanceToSquared2D(interiorProxy.Position);
+				if (distance <= closestDistance)
+				{
+					closest = interiorProxy;
+					closestDistance = distance;
+				}
+			}
+			return closest;
 		}
 
 		/// <summary>
@@ -1296,6 +1572,71 @@ namespace GTA
 			Function.Call(Hash.DRAW_POLY, vertexA.X, vertexA.Y, vertexA.Z, vertexB.X, vertexB.Y, vertexB.Z, vertexC.X, vertexC.Y, vertexC.Z, color.R, color.G, color.B, color.A);
 		}
 
+		/// <summary>
+		/// Draws a box that occupies the angled area.
+		/// An angled area is an X-Z oriented rectangle with three parameters: origin, extent, and width.
+		/// </summary>
+		/// <param name="originEdge">The mid-point along a base edge of the rectangle.</param>
+		/// <param name="extentEdge">The mid-point of opposite base edge on the other Z.</param>
+		/// <param name="width">The length of the base edge.</param>
+		/// <param name="color">The color of the box.</param>
+		/// <param name="drawFlags">Which sides to draw.</param>
+		public static void DrawBoxForAngledArea(Vector3 originEdge, Vector3 extentEdge, float width, Color color, DrawBoxFlags drawFlags = DrawBoxFlags.OutsideOnly)
+		{
+			if ((drawFlags & DrawBoxFlags.InsideOnly) == DrawBoxFlags.InsideOnly)
+			{
+				DrawBoxForAngledAreaInsideInternal(originEdge, extentEdge, width, color);
+			}
+			if ((drawFlags & DrawBoxFlags.OutsideOnly) == DrawBoxFlags.OutsideOnly)
+			{
+				DrawBoxForAngledAreaOutsideInternal(originEdge, extentEdge, width, color);
+			}
+		}
+
+		private static void DrawBoxForAngledAreaOutsideInternal(Vector3 origin, Vector3 extent, float width, Color color)
+		{
+			Vector3 point1 = origin;
+			Vector3 point2 = extent;
+			Vector3 point3 = new Vector3(point2.X, point2.Y, point1.Z);
+			Vector3 normalVector = Vector3.Cross(point2 - point1, point3 - point1).Normalized * (width / 2);
+
+			Vector3 point4 = new Vector3(point1.X, point1.Y, point2.Z);
+
+			DrawQuadPolygonInternal(point1 + normalVector, point2 + normalVector, point3 + normalVector, point4 + normalVector, color);
+			DrawQuadPolygonInternal(point2 - normalVector, point1 - normalVector, point3 - normalVector, point4 - normalVector, color);
+
+			DrawQuadPolygonInternal(point1 + normalVector, point3 - normalVector, point1 - normalVector, point3 + normalVector, color);
+			DrawQuadPolygonInternal(point2 + normalVector, point4 - normalVector, point2 - normalVector, point4 + normalVector, color);
+
+			DrawQuadPolygonInternal(point2 + normalVector, point3 - normalVector, point3 + normalVector, point2 - normalVector, color);
+			DrawQuadPolygonInternal(point1 + normalVector, point4 - normalVector, point4 + normalVector, point1 - normalVector, color);
+		}
+
+		private static void DrawBoxForAngledAreaInsideInternal(Vector3 origin, Vector3 extent, float width, Color color)
+		{
+			Vector3 point1 = origin;
+			Vector3 point2 = extent;
+			Vector3 point3 = new Vector3(point2.X, point2.Y, point1.Z);
+			Vector3 normalVector = Vector3.Cross(point2 - point1, point3 - point1).Normalized * (width / 2);
+
+			Vector3 point4 = new Vector3(point1.X, point1.Y, point2.Z);
+
+			DrawQuadPolygonInternal(point2 + normalVector, point1 + normalVector, point3 + normalVector, point4 + normalVector, color);
+			DrawQuadPolygonInternal(point1 - normalVector, point2 - normalVector, point3 - normalVector, point4 - normalVector, color);
+
+			DrawQuadPolygonInternal(point3 - normalVector, point1 + normalVector, point1 - normalVector, point3 + normalVector, color);
+			DrawQuadPolygonInternal(point4 - normalVector, point2 + normalVector, point2 - normalVector, point4 + normalVector, color);
+
+			DrawQuadPolygonInternal(point3 - normalVector, point2 + normalVector, point3 + normalVector, point2 - normalVector, color);
+			DrawQuadPolygonInternal(point4 - normalVector, point1 + normalVector, point4 + normalVector, point1 - normalVector, color);
+		}
+
+		private static void DrawQuadPolygonInternal(Vector3 point1, Vector3 point2, Vector3 point3, Vector3 point4, Color color)
+		{
+			DrawPolygon(point1, point2, point3, color);
+			DrawPolygon(point2, point1, point4, color);
+		}
+
 		#endregion
 
 		#region Raycasting
@@ -1589,6 +1930,26 @@ namespace GTA
 		public static string GetZoneLocalizedName(Vector3 position)
 		{
 			return Game.GetLocalizedString(GetZoneDisplayName(position));
+		}
+
+		/// <summary>
+		/// Determines whether the specified point is in the angled area.
+		/// An angled area is an X-Z oriented rectangle with three parameters: origin, extent, and width.
+		/// </summary>
+		/// <param name="point">The point to check whether is in the angled area.</param>
+		/// <param name="originEdge">The mid-point along a base edge of the rectangle.</param>
+		/// <param name="extentEdge">The mid-point of opposite base edge on the other Z.</param>
+		/// <param name="width">The length of the base edge.</param>
+		/// <param name="includeZAxis">
+		/// If set to <see langword="true" />, the method will also check if the point is in area in Z axis as well as X and Y axes.
+		/// If set to <see langword="false" />, the method will only check if the point is in area in X and Y axes.
+		/// </param>
+		///  <returns>
+		///   <see langword="true" /> if the specified point is in the specified angled area; otherwise, <see langword="false" />.
+		/// </returns>
+		public static bool IsPointInAngledArea(Vector3 point, Vector3 originEdge, Vector3 extentEdge, float width, bool includeZAxis = true)
+		{
+			return Function.Call<bool>(Hash.IS_POINT_IN_ANGLED_AREA, point.X, point.Y, point.Z, originEdge.X, originEdge.Y, originEdge.Z, extentEdge.X, extentEdge.Y, extentEdge.Z, width, false, includeZAxis);
 		}
 
 		#endregion

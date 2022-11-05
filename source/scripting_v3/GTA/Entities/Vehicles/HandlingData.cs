@@ -8,6 +8,11 @@ using System;
 
 namespace GTA
 {
+	/// <summary>
+	/// <para>This class has most regular handling data. Currently compatible with 1.0.2060.0 or later.</para>
+	/// <para>Note that this class gets data from or sets data to the <c>CHandlingData</c> instance as is, and thus not all the handling values don't match the equivalent values in the <c>handling.meta</c> file.
+	/// The game multiplies or divides some values after reading values from the <c>handling.meta</c> file.</para>
+	/// </summary>
 	public class HandlingData
 	{
 		internal HandlingData(IntPtr address)
@@ -33,9 +38,10 @@ namespace GTA
 
 		/// <summary>
 		/// Gets or sets the bias between front and rear for the anti-roll bar.
+		/// This value will be set to the equivalent value in the <c>handling.meta</c> multiplied by 2 when <see cref="HandlingData"/> instances are initialized.
 		/// </summary>
 		/// <value>
-		/// The anti roll bar bias front. 0.0f is fully front, 1.0f is fully rear.
+		/// The anti roll bar bias front. 0.0f is fully front, 2.0f is fully rear.
 		/// </value>
 		public float AntiRollBarBiasFront
 		{
@@ -85,6 +91,50 @@ namespace GTA
 				}
 
 				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0xDC, value);
+			}
+		}
+
+		public float BoostMaxSpeed
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x130);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x130, value);
+			}
+		}
+
+		public float BrakeBiasFront
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x74);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x74, value);
 			}
 		}
 
@@ -255,6 +305,63 @@ namespace GTA
 		}
 
 		/// <summary>
+		/// Gets or sets the amount of downforce applied to the vehicle.
+		/// </summary>
+		/// <value>
+		/// The amount of downforce applied to the vehicle.
+		/// </value>
+		public float DownForceModifier
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x14);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x14, value);
+			}
+		}
+
+		/// <summary>
+		/// <para>Gets or sets how much the vehicle gives rear axles force. The rest of the force will be given to front axles. This value will be set to the equivalent value in the <c>handling.meta</c> multiplied by 2 when <see cref="HandlingData"/> instances are initialized.</para>
+		/// <para>0.0 is rear wheel drive, 2.0 is front wheel drive, and any value between 0.01 and 0.199 is four wheel drive (1.0 give both front and rear axles equal force, being perfect 4WD.)</para>
+		/// </summary>
+		/// <value>
+		/// The percent the vehicle gives rear axles force (between 0.0 to 2.0).
+		/// </value>
+		public float DriveBiasFront
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x48);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x48, value);
+			}
+		}
+
+		/// <summary>
 		/// Gets or sets the drive inertia that determines how fast the engine acceleration is.
 		/// </summary>
 		/// <value>
@@ -352,6 +459,34 @@ namespace GTA
 		}
 
 		/// <summary>
+		/// Gets or sets the drag coefficient.
+		/// </summary>
+		/// <value>
+		/// The drag coefficient.
+		/// </value>
+		public float InitialDragCoefficient
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x10);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x10, value);
+			}
+		}
+
+		/// <summary>
 		/// Gets or sets the power engine produces in top gear.
 		/// </summary>
 		/// <value>
@@ -404,6 +539,64 @@ namespace GTA
 				}
 
 				SHVDN.NativeMemory.WriteInt32(MemoryAddress + 0x50, value);
+			}
+		}
+
+		/// <summary>
+		/// Determines the speed at redline in high gear; Controls the final drive of the vehicle's gearbox.
+		/// Setting this value does not guarantee the vehicle will reach this speed.
+		/// </summary>
+		/// <value>
+		/// the speed at redline in high gear.
+		/// </value>
+		public float InitialDriveMaxFlatVelocity
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x68);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x68, value);
+			}
+		}
+
+		/// <summary>
+		/// How much traction is reduced at low speed, 0.0 means normal traction. It affects mainly car burnout (spinning wheels when car doesn't move) when pressing gas.
+		/// Decreasing value will cause less burnout, less sliding at start. However, the higher value, the more burnout car gets.
+		/// </summary>
+		/// <value>
+		/// How much traction is reduced at low speed.
+		/// </value>
+		public float LowSpeedTractionLossMultiplier
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0xA8);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0xA8, value);
 			}
 		}
 
@@ -545,6 +738,56 @@ namespace GTA
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the rotation values in degree the parts pop-up headlights needs to be rotated when headlights are on.
+		/// </summary>
+		/// <value>
+		/// The rotation values in degree. Can be negative.
+		/// </value>
+		public float PopUpLightRotation
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x18);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x18, value);
+			}
+		}
+
+		public float RocketBoostCapacity
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x120);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x120, value);
+			}
+		}
+
 		public float RollCenterHeightFront
 		{
 			get
@@ -656,11 +899,14 @@ namespace GTA
 		}
 
 		/// <summary>
-		/// Gets or sets a value that multiplies the game's calculation of the angle of the steer wheel will turn while at full turn.
+		/// <para>
+		/// Gets or sets a value that multiplies the game's calculation of the angle of the steer wheel will turn while at full turn in radians.
 		/// Steering lock is directly related to over/under-steer.
+		/// </para>
+		/// <para>When <see cref="HandlingData"/> instances are initialized, the game converts the value in degrees read from <c>handling.meta</c> to radians before this value is initialized.</para>
 		/// </summary>
 		/// <value>
-		/// The value that multiplies the game's calculation of the angle of the steer wheel, between 0.01 and above.
+		/// The value that multiplies the game's calculation of the angle of the steer wheel in radians, between 0.01 and above.
 		/// </value>
 		public float SteeringLock
 		{
@@ -687,6 +933,7 @@ namespace GTA
 		/// <summary>
 		/// Gets or sets the damping scale bias between front and rear wheels.
 		/// This value determines which suspension is stronger, front or rear.
+		/// This value will be set to the equivalent value in the <c>handling.meta</c> multiplied by 2 when <see cref="HandlingData"/> instances are initialized.
 		/// </summary>
 		/// <value>
 		/// The suspension bias front.
@@ -716,6 +963,13 @@ namespace GTA
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the damping during strut compression.
+		/// This value will be set to the equivalent value in the <c>handling.meta</c> divided by 10 when <see cref="HandlingData"/> instances are initialized.
+		/// </summary>
+		/// <value>
+		/// The damping during strut compression.
+		/// </value>
 		public float SuspensionCompressionDamping
 		{
 			get
@@ -823,6 +1077,13 @@ namespace GTA
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the damping during strut rebound.
+		/// This value will be set to the equivalent value in the <c>handling.meta</c> divided by 10 when <see cref="HandlingData"/> instances are initialized.
+		/// </summary>
+		/// <value>
+		/// The damping during strut rebound.
+		/// </value>
 		public float SuspensionReboundDamping
 		{
 			get
@@ -875,6 +1136,7 @@ namespace GTA
 
 		/// <summary>
 		/// Gets or sets the value that determines the distribution of traction from front to rear.
+		/// This value will be set to the equivalent value in the <c>handling.meta</c> multiplied by 2 when <see cref="HandlingData"/> instances are initialized.
 		/// </summary>
 		/// <value>
 		/// The value that determines distribution of traction from front to rear.
@@ -945,6 +1207,28 @@ namespace GTA
 			}
 		}
 
+		public float TractionCurveLateral
+		{
+			get
+			{
+				if (!IsValid)
+				{
+					return 0.0f;
+				}
+
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0x98);
+			}
+			set
+			{
+				if (!IsValid)
+				{
+					return;
+				}
+
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0x98, value);
+			}
+		}
+
 		/// <summary>
 		/// Gets or sets how much traction is affected by material grip differences from 1.0f.
 		/// </summary>
@@ -960,7 +1244,7 @@ namespace GTA
 					return 0.0f;
 				}
 
-				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0xA8);
+				return SHVDN.NativeMemory.ReadFloat(MemoryAddress + 0xB8);
 			}
 			set
 			{
@@ -969,7 +1253,7 @@ namespace GTA
 					return;
 				}
 
-				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0xA8, value);
+				SHVDN.NativeMemory.WriteFloat(MemoryAddress + 0xB8, value);
 			}
 		}
 
